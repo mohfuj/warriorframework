@@ -1,3 +1,4 @@
+#pylint: disable=too-many-branches
 '''
 Copyright 2017, Fujitsu Network Communications, Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +15,12 @@ limitations under the License.
 import copy
 import glob
 import os
+import json
 
-from Framework.Utils.print_Utils import print_warning, print_info
 import Framework.Utils as Utils
+from Framework.Utils.print_Utils import print_warning, print_info, print_error
+from Framework.Utils.data_Utils import get_object_from_datarepository
+from Framework.Utils.file_Utils import getAbsPath
 
 """ Module that contains common utilities required for execution """
 
@@ -45,7 +49,7 @@ def append_step_list(step_list, step, value, go_next, mode, tag):
     return step_list
 
 
-def get_step_list(filepath, step_tag, sub_step_tag):
+def get_step_list(filepath, step_tag, sub_step_tag, loop_tag="Loop"):
     """
     Takes the location of Testcase/Suite/Project file as input
     Returns a list of all the step/testcase/testsuite elements
@@ -55,6 +59,7 @@ def get_step_list(filepath, step_tag, sub_step_tag):
         1. filepath     = full path of the Testcase/suite/project xml file
         2. step_tag     = xml tag for group of step in the file
         3. sub_step_tag = xml tag for each step in the file
+        4. loop_tag     = xml tag for loop. Loop by default
     """
     step_list_with_rmt_retry = []
     root = Utils.xml_Utils.getRoot(filepath)
@@ -62,7 +67,42 @@ def get_step_list(filepath, step_tag, sub_step_tag):
     if steps is None:
         print_warning("The file: '{0}' has no {1} to be executed"
                       .format(filepath, step_tag))
-    step_list = steps.findall(sub_step_tag)
+    step_list = []
+    for child_node in steps:
+        if child_node.tag == sub_step_tag:
+            step_list.append(child_node)
+        elif child_node.tag == loop_tag:
+            json_file = child_node.get("file").strip()
+            if "${ENV." in json_file:
+                json_file = Utils.data_Utils.sub_from_env_var(json_file)
+            print_info("file is {}".format(json_file))
+            loop_steps = child_node.findall(sub_step_tag)
+            testcasefile_path = get_object_from_datarepository('wt_testcase_filepath')
+            try:
+                filepath = getAbsPath(json_file, os.path.dirname(testcasefile_path))
+                with open(filepath, "r") as json_handle:
+                    json_doc = json.load(json_handle)
+            except ValueError:
+                print_error('The file {0} is not a valid json '
+                            'file'.format(filepath))
+            except IOError:
+                print_error('The file {0} does not exist'.format(filepath))
+            except Exception as error:
+                print_error('Encountered {0} error'.format(error))
+
+            for _, iter_json in enumerate(json_doc):
+                print_info("json doc : {}".format(iter_json))
+                for loop_step in loop_steps:
+                    copy_step = copy.deepcopy(loop_step)
+                    arguments = copy_step.find('Arguments')
+                    if arguments is not None and arguments is not False:
+                        for argument in arguments.findall('argument'):
+                            arg_value = argument.get('value')
+                            if arg_value is not None and iter_json.get(arg_value):
+                                argument.set("value", str(iter_json[arg_value]))
+                    step_list.append(copy_step)
+
+    print_info("step_list is {}".format(step_list))
     if root.tag == 'Project' or root.tag == 'TestSuite':
         step_list = []
         orig_step_list = steps.findall(sub_step_tag)
@@ -127,7 +167,6 @@ def get_step_list(filepath, step_tag, sub_step_tag):
         if retry_type is None and runmode is None:
             step_list_with_rmt_retry.append(step)
     return step_list_with_rmt_retry
-
 
 def get_runmode_from_xmlfile(element):
     """Get 'runmode:type' & 'runmode:value' of a step/testcase from the
