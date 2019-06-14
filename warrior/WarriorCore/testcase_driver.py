@@ -682,7 +682,7 @@ def execute_testcase(testcase_filepath, data_repository, tc_context,
         build_url = os.getenv('BUILD_URL')
         stage_name = os.getenv('STAGE_NAME')
         log_path_split = console_log_file.split(job_name)[1]
-        print job_url,job_name,build_url
+        print job_url,job_name,build_url,stage_name
         print log_path_split
 
     except Exception as e:
@@ -692,7 +692,7 @@ def execute_testcase(testcase_filepath, data_repository, tc_context,
     print job_url
 
     if job_url:
-        if stage_name:
+        if stage_name in job_url or "jenkins" in job_url:
             fail_msg = "{}execution/node/3/ws{}".format(build_url, log_path_split)
         else:
             fail_msg = "{}/ws/{}".format(job_url, log_path_split)
