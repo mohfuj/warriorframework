@@ -682,6 +682,7 @@ def execute_testcase(testcase_filepath, data_repository, tc_context,
         build_url = os.getenv('BUILD_URL')
         stage_name = os.getenv('STAGE_NAME')
         log_path_split = console_log_file.split(job_name)[1]
+        print job_url,job_name,build_url
         print log_path_split
 
     except Exception as e:
