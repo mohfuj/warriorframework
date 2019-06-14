@@ -140,13 +140,16 @@ class Junit(object):
         self.add_property(name=kw_name, value="KEYWORD_DISCARD", elem_type="kw",
                           timestamp=tc_timestamp, keyword_items=keyword_items)
 
-    def add_testcase_message(self, timestamp, status):
+    def add_testcase_message(self, timestamp, status,logs_dir):
         """ Add a message element for fail/error/skip cases """
         elem = self.get_tc_with_timestamp(timestamp)
+        print str(status)
         if elem is None:
             elem = self.get_ts_with_timestamp(timestamp)
+        if str(status).lower() == "true":
+            elem.append(self.create_element("skipped", {"message": logs_dir}))
         if str(status).lower() == "false":
-            elem.append(self.create_element("failure", {"message": "test failure"}))
+            elem.append(self.create_element("failure", {"message": logs_dir}))
         elif str(status).lower() == "error":
             elem.append(self.create_element("error", {}))
         elif str(status).lower() == "skipped":
