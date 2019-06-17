@@ -18,6 +18,7 @@ iterative_parallel drivers according to the  data_type and run_type of the testc
 # pylint: disable=wrong-import-position
 import sys
 import os
+import re
 import time
 import shutil
 from WarriorCore.defects_driver import DefectsDriver
@@ -699,6 +700,8 @@ def execute_testcase(testcase_filepath, data_repository, tc_context,
     else:
         fail_msg = "failure message"
 
+    
+    fail_msg=re.sub(r'ws_.*/','ws/',fail_msg)
     tc_junit_object.add_testcase_message(tc_timestamp, tc_status, fail_msg)
     if str(tc_status).upper() in ["FALSE", "ERROR", "EXCEPTION"]:
         tc_junit_object.update_attr("defects", defectsdir, "tc", tc_timestamp)
