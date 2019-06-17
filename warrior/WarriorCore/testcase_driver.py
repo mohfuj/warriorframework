@@ -700,7 +700,6 @@ def execute_testcase(testcase_filepath, data_repository, tc_context,
     else:
         fail_msg = "failure message"
 
-    
     fail_msg=re.sub(r'ws_.*/','ws/',fail_msg)
     tc_junit_object.add_testcase_message(tc_timestamp, tc_status, fail_msg)
     if str(tc_status).upper() in ["FALSE", "ERROR", "EXCEPTION"]:
