@@ -151,9 +151,9 @@ class Junit(object):
         if str(status).lower() == "false":
             elem.append(self.create_element("failure", {"message": logs_dir}))
         elif str(status).lower() == "error":
-            elem.append(self.create_element("error", {}))
+            elem.append(self.create_element("error", {"message": logs_dir}))
         elif str(status).lower() == "skipped":
-            elem.append(self.create_element("skipped", {}))
+            elem.append(self.create_element("skipped", {"message": logs_dir}))
 
     def add_requirement(self, requirement, timestamp):
         """add a new requirement when called"""
