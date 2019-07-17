@@ -678,6 +678,7 @@ def execute_testcase(testcase_filepath, data_repository, tc_context,
 
         for f in files:
             console_log_file = f
+            print_info("console_log_file:",console_log_file)
         job_url = os.getenv('JOB_URL')
         job_name = os.getenv('JOB_NAME')
         build_url = os.getenv('BUILD_URL')
