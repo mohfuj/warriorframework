@@ -147,7 +147,7 @@ class Junit(object):
         if elem is None:
             elem = self.get_ts_with_timestamp(timestamp)
         if str(status).lower() == "true":
-            elem.append(self.create_element("skipped", {"message": logs_dir}))
+            elem.append(self.create_element("pass", {"message": logs_dir}))
         if str(status).lower() == "false":
             elem.append(self.create_element("failure", {"message": logs_dir}))
         elif str(status).lower() == "error":
